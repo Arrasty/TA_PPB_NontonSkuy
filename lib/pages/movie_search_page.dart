@@ -20,9 +20,9 @@ class _MovieSearchState extends State<MovieSearch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0), // Set the height of the AppBar to zero
+        preferredSize: Size.fromHeight(0),
         child: AppBar(
-          automaticallyImplyLeading: false, // Remove the back button
+          automaticallyImplyLeading: false,
         ),
       ),
       body: Column(
@@ -36,8 +36,8 @@ class _MovieSearchState extends State<MovieSearch> {
                 labelText: 'Search for movies',
                 labelStyle: TextStyle(color: Colors.grey),
                 focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Style.deepPurple), // Ubah warna sesuai keinginan Anda
-              ),
+                  borderSide: BorderSide(color: Style.deepPurple),
+                ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search, color: Colors.white),
                   onPressed: () {
@@ -57,6 +57,13 @@ class _MovieSearchState extends State<MovieSearch> {
                     _searchResults[index].title ?? '',
                     style: TextStyle(color: Colors.white),
                   ),
+                  leading: _searchResults[index].poster != null
+                      ? Image.network(
+                          "https://image.tmdb.org/t/p/w200/${_searchResults[index].poster}",
+                          width: 50,
+                          height: 75,
+                        )
+                      : Container(),
                   onTap: () {
                     _navigateToMovieDetails(_searchResults[index]);
                   },
@@ -69,48 +76,44 @@ class _MovieSearchState extends State<MovieSearch> {
     );
   }
 
-void _performSearch() async {
-  final String searchQuery = _searchController.text.trim();
-  if (searchQuery.isNotEmpty) {
-    try {
-      final MovieSearchModel searchResult =
-          await HttpRequest.searchMovies(searchQuery);
+  void _performSearch() async {
+    final String searchQuery = _searchController.text.trim();
+    if (searchQuery.isNotEmpty) {
+      try {
+        final MovieSearchModel searchResult =
+            await HttpRequest.searchMovies(searchQuery);
 
-      // Filter out movies without complete details
-      setState(() {
-        _searchResults = searchResult.results
-            .where((movie) =>
-                movie.id != null &&
-                movie.title != null &&
-                movie.overview != null &&
-                movie.title!.isNotEmpty && // Ensure title is not empty
-                movie.id! > 0 && // Ensure that id is a positive integer
-                movie.overview!.isNotEmpty &&
-                movie.poster != null &&
-                movie.poster!.isNotEmpty &&
-                movie.backDrop != null &&
-                movie.backDrop!.isNotEmpty)
-            .toList();
-      });
-    } catch (error) {
-      print('Error searching movies: $error');
+        setState(() {
+          _searchResults = searchResult.results
+              .where((movie) =>
+                  movie.id != null &&
+                  movie.title != null &&
+                  movie.overview != null &&
+                  movie.title!.isNotEmpty &&
+                  movie.id! > 0 &&
+                  movie.overview!.isNotEmpty &&
+                  movie.poster != null &&
+                  movie.poster!.isNotEmpty &&
+                  movie.backDrop != null &&
+                  movie.backDrop!.isNotEmpty)
+              .toList();
+        });
+      } catch (error) {
+        print('Error searching movies: $error');
+      }
     }
   }
-}
 
-
-void _navigateToMovieDetails(Movie movie) {
-  if (movie.id != null && movie.title != null) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MoviesDetailsScreen(movie: movie),
-      ),
-    );
-  } else {
-    // Handle the case where movie details are incomplete
-    print('Incomplete movie details: $movie');
-    // You can show a snackbar or display an error message here
+  void _navigateToMovieDetails(Movie movie) {
+    if (movie.id != null && movie.title != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MoviesDetailsScreen(movie: movie),
+        ),
+      );
+    } else {
+      print('Incomplete movie details: $movie');
+    }
   }
-}
 }
